@@ -68,8 +68,9 @@ void MainWindow::onGrabRequested() {
     fd.setAcceptMode(QFileDialog::AcceptSave);
     fd.setDefaultSuffix("png");
     fd.selectFile("test.png");
-    if (fd.exec() == QDialog::Accepted)
+    if (fd.exec() == QDialog::Accepted) {
         img.save(fd.selectedFiles().first());
+    }
 }
 
 QVulkanWindowRenderer *VulkanWindow::createRenderer() {
@@ -99,26 +100,33 @@ void VulkanRenderer::initResources() {
                               VK_VERSION_PATCH(props.apiVersion));
 
     info += QStringLiteral("Supported instance layers:\n");
-    for (const QVulkanLayer &layer : inst->supportedLayers())
+    for (const QVulkanLayer &layer : inst->supportedLayers()) {
         info += QString::asprintf("    %s v%u\n", layer.name.constData(), layer.version);
+    }
+
     info += QStringLiteral("Enabled instance layers:\n");
-    for (const QByteArray &layer : inst->layers())
+    for (const QByteArray &layer : inst->layers()) {
         info += QString::asprintf("    %s\n", layer.constData());
+    }
 
     info += QStringLiteral("Supported instance extensions:\n");
-    for (const QVulkanExtension &ext : inst->supportedExtensions())
+    for (const QVulkanExtension &ext : inst->supportedExtensions()) {
         info += QString::asprintf("    %s v%u\n", ext.name.constData(), ext.version);
+    }
+
     info += QStringLiteral("Enabled instance extensions:\n");
-    for (const QByteArray &ext : inst->extensions())
+    for (const QByteArray &ext : inst->extensions()) {
         info += QString::asprintf("    %s\n", ext.constData());
+    }
 
     info += QString::asprintf("Color format: %u\nDepth-stencil format: %u\n", m_window->colorFormat(),
                               m_window->depthStencilFormat());
 
     info += QStringLiteral("Supported sample counts:");
     const QList<int> sampleCounts = m_window->supportedSampleCounts();
-    for (int count : sampleCounts)
+    for (int count : sampleCounts) {
         info += QLatin1Char(' ') + QString::number(count);
+    }
     info += QLatin1Char('\n');
 
     emit static_cast<VulkanWindow *>(m_window)->vulkanInfoReceived(info);

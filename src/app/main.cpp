@@ -16,10 +16,12 @@ static QPointer<QPlainTextEdit> messageLogWidget;
 static QtMessageHandler oldMessageHandler = nullptr;
 
 static void messageHandler(QtMsgType msgType, const QMessageLogContext &logContext, const QString &text) {
-    if (!messageLogWidget.isNull())
+    if (!messageLogWidget.isNull()) {
         messageLogWidget->appendPlainText(text);
-    if (oldMessageHandler)
+    }
+    if (oldMessageHandler) {
         oldMessageHandler(msgType, logContext, text);
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -35,8 +37,9 @@ int main(int argc, char *argv[]) {
     QVulkanInstance inst;
     inst.setLayers({"VK_LAYER_KHRONOS_validation"});
 
-    if (!inst.create())
+    if (!inst.create()) {
         qFatal("Failed to create Vulkan instance: %d", inst.errorCode());
+    }
 
     VulkanWindow *vulkanWindow = new VulkanWindow;
     vulkanWindow->setVulkanInstance(&inst);

@@ -91,6 +91,7 @@ void TriangleRenderer::initResources() {
     VkBufferCreateInfo bufInfo;
     memset(&bufInfo, 0, sizeof(bufInfo));
     bufInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+
     // Our internal layout is vertex, uniform, uniform, ... with each uniform buffer start offset aligned to uniAlign.
     const VkDeviceSize vertexAllocSize  = aligned(sizeof(vertexData), uniAlign);
     const VkDeviceSize uniformAllocSize = aligned(UNIFORM_DATA_SIZE, uniAlign);
@@ -98,8 +99,9 @@ void TriangleRenderer::initResources() {
     bufInfo.usage                       = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
     VkResult err = m_devFuncs->vkCreateBuffer(dev, &bufInfo, nullptr, &m_buf);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to create buffer: %d", err);
+    }
 
     VkMemoryRequirements memReq;
     m_devFuncs->vkGetBufferMemoryRequirements(dev, m_buf, &memReq);
@@ -108,17 +110,21 @@ void TriangleRenderer::initResources() {
                                          m_window->hostVisibleMemoryIndex()};
 
     err = m_devFuncs->vkAllocateMemory(dev, &memAllocInfo, nullptr, &m_bufMem);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to allocate memory: %d", err);
+    }
 
     err = m_devFuncs->vkBindBufferMemory(dev, m_buf, m_bufMem, 0);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to bind buffer memory: %d", err);
+    }
 
     quint8 *p;
     err = m_devFuncs->vkMapMemory(dev, m_bufMem, 0, memReq.size, 0, reinterpret_cast<void **>(&p));
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to map memory: %d", err);
+    }
+
     memcpy(p, vertexData, sizeof(vertexData));
     QMatrix4x4 ident;
     memset(m_uniformBufInfo, 0, sizeof(m_uniformBufInfo));
@@ -167,16 +173,18 @@ void TriangleRenderer::initResources() {
     descPoolInfo.poolSizeCount = 1;
     descPoolInfo.pPoolSizes    = &descPoolSizes;
     err                        = m_devFuncs->vkCreateDescriptorPool(dev, &descPoolInfo, nullptr, &m_descPool);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to create descriptor pool: %d", err);
+    }
 
     VkDescriptorSetLayoutBinding layoutBinding = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT,
                                                   nullptr};
     VkDescriptorSetLayoutCreateInfo descLayoutInfo = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO, nullptr, 0,
                                                       1, &layoutBinding};
     err = m_devFuncs->vkCreateDescriptorSetLayout(dev, &descLayoutInfo, nullptr, &m_descSetLayout);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to create descriptor set layout: %d", err);
+    }
 
     for (int i = 0; i < concurrentFrameCount; ++i) {
         VkDescriptorSetAllocateInfo descSetAllocInfo = {VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO, nullptr,
@@ -200,8 +208,9 @@ void TriangleRenderer::initResources() {
     memset(&pipelineCacheInfo, 0, sizeof(pipelineCacheInfo));
     pipelineCacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
     err                     = m_devFuncs->vkCreatePipelineCache(dev, &pipelineCacheInfo, nullptr, &m_pipelineCache);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to create pipeline cache: %d", err);
+    }
 
     // Pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo;
@@ -210,8 +219,9 @@ void TriangleRenderer::initResources() {
     pipelineLayoutInfo.setLayoutCount = 1;
     pipelineLayoutInfo.pSetLayouts    = &m_descSetLayout;
     err = m_devFuncs->vkCreatePipelineLayout(dev, &pipelineLayoutInfo, nullptr, &m_pipelineLayout);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to create pipeline layout: %d", err);
+    }
 
     // Shaders
     VkShaderModule vertShaderModule = createShader(QStringLiteral(":/color_vert.spv"));
@@ -294,13 +304,16 @@ void TriangleRenderer::initResources() {
     pipelineInfo.renderPass = m_window->defaultRenderPass();
 
     err = m_devFuncs->vkCreateGraphicsPipelines(dev, m_pipelineCache, 1, &pipelineInfo, nullptr, &m_pipeline);
-    if (err != VK_SUCCESS)
+    if (err != VK_SUCCESS) {
         qFatal("Failed to create graphics pipeline: %d", err);
+    }
 
-    if (vertShaderModule)
+    if (vertShaderModule) {
         m_devFuncs->vkDestroyShaderModule(dev, vertShaderModule, nullptr);
-    if (fragShaderModule)
+    }
+    if (fragShaderModule) {
         m_devFuncs->vkDestroyShaderModule(dev, fragShaderModule, nullptr);
+    }
 }
 
 void TriangleRenderer::initSwapChainResources() {
